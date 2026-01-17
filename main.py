@@ -23,11 +23,11 @@ colors_root = {
 }
 
 OriginNode = (0,0)
-paths = set(OriginNode)
 Origin_CallBack = (0, 0)
-CallBack_full_list = []
+NotValid = set(OriginNode)
+DeadCell = set()
+stack_history = []
 Algorithm_status = False
-
 
 # Build the Map function
 def ClearMap():
@@ -59,8 +59,8 @@ while Running:
             if event.key == pygame.K_m: # Saving the map cells in file to use lmra jaya
                 try:
                     with open('PathData.txt','w') as file: # Write data on the file (Anl9ah fsame path kola mra hehe)
-                        file.write(str(paths))
-                        print(Fore.GREEN+Style.BRIGHT+f"Map god saved in the file Succsusfully")
+                        file.write(str(NotValid))
+                        print(Fore.GREEN+Style.BRIGHT+f"Map got saved in the file Succsusfully")
                     pass
                 except Exception as e: # Detect Errors
                     print(Fore.RED+Style.BRIGHT+f"Error Detected  : {e}")
@@ -70,11 +70,13 @@ while Running:
                 print(Fore.GREEN+Style.BRIGHT+f"Map hase been cleard !!")
                 OriginNode = (0,0)
                 Origin_CallBack = (0, 0)
-                CallBack_full_list = []
-                paths = set() # Clear the list of paths
+                stack_history = []
+                NotValid = set() # Clear the list of NotValid
+                DeadCell = set()
                 
                 Algorithm_status = False
                 ClearMap()
+                print(DeadCell)
                 
             
             if event.key == pygame.K_s:
@@ -116,6 +118,7 @@ while Running:
         global Origin_CallBack
         global OriginNode
         global Algorithm_status
+        global NotValid
         
         cell_x, cell_y = OriginNode[0], OriginNode[1]
         pygame.draw.circle(screen, colors_root["Origin-node"], ((OriginNode[0] * celle_size) + celle_size / 2 , (OriginNode[1] * celle_size) + celle_size / 2), 2)
@@ -132,56 +135,100 @@ while Running:
         ]
     
     
+    
+        # Yaa jedk l7rira katbda mn hna bla ma tsawlni ana katb hadchi o ma3rftoch kifach 5dm hahaha
+        # (RIR DAHK :D )
+    
+    
         for Neighber in neighbors:
             status = Filtring_Function(Neighber)
-            print(status)
+            # print(status)
             if not status:
+                NotValid.add(tuple(Neighber))
                 pass
             if status:
-                CallBack_full_list.append(Neighber)
                 Valid_choices.append(Neighber)
 
-        try:
-            if not Valid_choices:
-                if not Filtring_Function(CallBack_full_list.pop()):
-                    CallBack_full_list.remove(CallBack_full_list[-1])
-                else:
-                    OriginNode = CallBack_full_list.pop()
-                    Origin_CallBack = OriginNode
-                    paths.add(tuple(OriginNode))
-                    
-            else:
-                paths.add(tuple(OriginNode))
-                Origin_CallBack = tuple(OriginNode)
-                OriginNode = random.choice(Valid_choices)
-                
 
-            DrawingFunc(OriginNode[0], OriginNode[1])
-            Valid_choices = []
+        try:
+            if not Valid_choices: # If the cell have no Neighbors (mskiins hahaha)
+                DeadCell.add(tuple(OriginNode))
+                
+                if stack_history:
+                    NewOrigin = stack_history.pop() # Get the new OriginNode from the History
+                    OriginNode = NewOrigin # Use the new OriginNode
+                    Origin_CallBack = stack_history[-1] # Use the New Call Back node
+                    
+                    NotValid.add(tuple(OriginNode))
+                    DrawingFunc(OriginNode[0], OriginNode[1])
+                    pass
+                else:
+                    ClearTerminal()
+                    print(Fore.GREEN+Style.BRIGHT+f"Maze got generated Successfully")
+                    Algorithm_status = False
+                    
+                    
+                    
+                    
+                    
+                    
+            if Valid_choices:
+                stack_history.append(tuple(OriginNode)) # Get The OLD Origin
+                RandomChoice = random.choice(Valid_choices)
+                Origin_CallBack = OriginNode
+                OriginNode = RandomChoice
+                
+                NotValid.add(tuple(RandomChoice))
+                stack_history.append(RandomChoice) # Get The new Origin
+                DrawingFunc(OriginNode[0], OriginNode[1])
+                
+            
+        except Exception as error:
+            ClearTerminal()
+            print(Fore.RED+Style.BRIGHT+f"Error Detected. {error}")
             pass
         
-        except Exception as e:
-            ClearTerminal()
-            print(Fore.RED+Style.BRIGHT+f"Error Detected !! {e}")
-            Algorithm_status = False
-            pass
-    
+
+
 
 
 
     # just for filltring the neighbors (jiran wkda rak fahm hoohoo)
-    def Filtring_Function(cordinates): 
-        if cordinates[0] * celle_size < 0 or cordinates[0] * celle_size >= screen_x or cordinates[1] * celle_size < 0 or cordinates[1] * celle_size >= screen_y or tuple(cordinates) in paths:
+    def Filtring_Function(cordinates):
+        x, y = cordinates
+
+        if x < 0 or y < 0: # Small Than the screen
+            # print(f"[{tuple(cordinates)}] {x} > 0, {y} > 0   | X-Y")
             return False
-        else:
-            return True
+        
+        if x >= screen_x/celle_size or y >= screen_y/celle_size: # Biiger than the screen
+            # print(f"[{tuple(cordinates)}] {x * celle_size} >= {screen_x}, {y * celle_size} >= {screen_y}   | Border-Screen")
+            return False
+        
+        if tuple(cordinates) in NotValid : # NotValid Cell
+            # print(f"[{tuple(cordinates)}], In NotValid {tuple(cordinates) in NotValid}  - In DeadList {tuple(cordinates) in DeadCell}   | Lists")
+            return False
+
+        if tuple(cordinates) in DeadCell: # Dead Cell
+            # Pos_x, Pos_y = cordinates[0], cordinates[1]
+            # print(Fore.RED+Style.BRIGHT+f"Dead Cell Detected HERE ....")
+            # pygame.draw.circle(screen, "RED", ((Pos_x * celle_size) + celle_size//2, (Pos_y * celle_size) + celle_size//2), 15)
+            # print(f"[{tuple(cordinates)}], In NotValid {tuple(cordinates) in NotValid}  - In DeadList {tuple(cordinates) in DeadCell}   | Lists")
+            return False
+
+
+        if cordinates == OriginNode or cordinates == Origin_CallBack: # The Same cell
+            return False
+        return True
+
 
     
     
     
     
     def DrawingFunc(Pos_x, Pos_y): # Drawing funciton.
-           
+        # print(Pos_x, Pos_y)
+        
         # Brock the bariers
         def BordersLogic():
             base, reference = OriginNode, Origin_CallBack
@@ -221,6 +268,7 @@ while Running:
         BordersLogic()
     
     
+    
         # Change Old origin color
         pygame.draw.circle(screen, colors_root["walls-color"], ((Origin_CallBack[0] * celle_size) + celle_size / 2, (Origin_CallBack[1] * celle_size) + celle_size / 2), 2)
         
@@ -228,7 +276,7 @@ while Running:
         pygame.draw.circle(screen, colors_root["Origin-node"], ((Pos_x * celle_size) + celle_size / 2, (Pos_y * celle_size) + celle_size / 2), 2)
     
         # Connect them by a line ( Rawabit 2ossariya rak fahm 3liya hhhhhh. ana 7amd 3arf 3arf)
-        pygame.draw.line(screen, "red",
+        pygame.draw.line(screen, "BLUE",
                          ((OriginNode[0] * celle_size) + celle_size/2, (OriginNode[1] * celle_size) + celle_size/2), # First Point Pos (Line start)
                          ((Origin_CallBack[0] * celle_size) + celle_size/2, (Origin_CallBack[1] * celle_size) + celle_size/2)  # Second Point Pos (Line End)
                          )
