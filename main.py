@@ -9,12 +9,12 @@ init(autoreset=True)
 pygame.init() # Initialisation (Get ready for work hehe)
 
 # Varibles
+Running = True
 screen_x, screen_y = 600, 600
-celle_size = 60
+celle_size = 10
 screen = pygame.display.set_mode((screen_x, screen_y))
 pygame.display.set_caption("Origin Shift Visualisation")
 clock = pygame.time.Clock()
-Running = True
 colors_root = {
     "background-color": (27, 26, 23),
     "walls-color": (230, 213, 184),
@@ -22,13 +22,15 @@ colors_root = {
     "Origin-node": (24, 174, 19, 0.8)
 }
 
-OriginNode = (9,5)
+OriginNode = (0,0)
 Origin_CallBack = (0, 0)
 NotValid = set(OriginNode)
-DeadCell = set()
+DeadCells = set()
 stack_history = []
 Algorithm_status = False
-Show_Details = True
+Show_Details = False
+
+start_time = 0
 
 # Build the Map function
 def ClearMap():
@@ -48,7 +50,39 @@ def ClearTerminal():
         os.system('clear')
     
     
+# Welcoming Message
+def Welcoming():
+    ClearTerminal() # clear the terminal
+    print(Fore.BLUE+Style.BRIGHT+f"""
+Hey Ther. I am {Fore.MAGENTA}t0m.dev{Fore.BLUE} or {Fore.MAGENTA}TOM{Fore.BLUE}, happy to see you using my project Agin.
+          
+{Fore.CYAN}[/] Description  :
+- {Fore.GREEN} The idea is simple. i used Origin-Shift Algorithme to make a visualisation of Maze Generating.{Fore.BLUE}
+          
+{Fore.CYAN}[/] Note  :
+- {Fore.MAGENTA}[Z] {Fore.BLUE} To Show The details of maze generating press {Fore.MAGENTA}[ Z ]{Fore.BLUE} Before you starting the Algorithm.
+- {Fore.MAGENTA}[S] {Fore.BLUE} To Start The algorithme press {Fore.MAGENTA}[S]{Fore.BLUE}. Also use the same key in your keyboard to pause it.
+- {Fore.MAGENTA}[M] {Fore.BLUE} To Save The used path in text file inside the same direction use {Fore.MAGENTA}[M]{Fore.BLUE}. (Use it after the maze get finished)
+- {Fore.MAGENTA}[O] {Fore.BLUE} Finally To Quit the Visualisation press {Fore.MAGENTA}[Q]{Fore.BLUE}.
+          
+          
+{Fore.CYAN}[/] Also  :
+- {Fore.BLUE} The Default Settings are  :
+    {Fore.GREEN}-> Show-Details  : {Fore.RED+str(Show_Details)}
+    {Fore.GREEN}-> Cell-Size  : {Fore.RED+str(celle_size)}px
+    {Fore.GREEN}-> Screen-Size  : [{Fore.RED+str(screen_x)}px | {str(screen_y)}px{Fore.GREEN}]
+    
+    
+{Fore.CYAN}[<3] From < t0m.dev > | < TOM >
+          """)
+    
+    time.sleep(2)
+    pass
+
+   
 ClearMap()
+Welcoming() 
+
 while Running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT: # Closing window Event
@@ -76,30 +110,38 @@ while Running:
                 Origin_CallBack = (0, 0)
                 stack_history = []
                 NotValid = set() # Clear the list of NotValid
-                DeadCell = set()
+                DeadCells = set()
                 
                 Algorithm_status = False
                 ClearMap()
-                print(DeadCell)
+                print(DeadCells)
                 
             
             # Start and stop using the Same button   (S)  : Keyboard
             if event.key == pygame.K_s:
                 if Algorithm_status:
                     Algorithm_status = False
+                    start_time = time.time() - start_time
                     ClearTerminal()
                     print(Fore.YELLOW+Style.BRIGHT+f"[START]  : Algorithm get stopped For a bit")
                 elif not Algorithm_status:
                     Algorithm_status = True
                     ClearTerminal()
                     print(Fore.GREEN+Style.BRIGHT+f"[START]  : Algorithm Going to start RN.")
+                    
+                    # Continue the counting
+                    if not start_time:
+                        start_time = time.time()
+                    else:
+                        start_time = time.time() - start_time
                 
                 
 
-            if event.key == pygame.K_o:
-                ClearTerminal()
-                print(Fore.RED+Style.BRIGHT+f"[SYS] : Algorithm God stopped for while.")
-                Algorithm_status = False
+            if event.key == pygame.K_z:
+                if not Show_Details:
+                    Show_Details = True
+                else:
+                    Show_Details = False
     
 
 
@@ -149,23 +191,22 @@ while Running:
     
         # Yaa jedk l7rira katbda mn hna bla ma tsawlni ana katb hadchi o ma3rftoch kifach 5dm hahaha
         # (RIR DAHK :D )
-    
-    
+
+        
+
         for Neighber in neighbors:
             if tuple(Neighber) in NotValid:
                 pass
             status = Filtring_Function(Neighber)
             # print(status)
             if not status:
-                NotValid.add(tuple(Neighber))
                 pass
             if status:
                 Valid_choices.append(Neighber)
 
-        print(Valid_choices)
+
         try:
             if not Valid_choices: # If the cell have no Neighbors (mskiins hahaha)
-
                 if stack_history:
                     NewOrigin = stack_history.pop() # Get the new OriginNode from the History
                     OriginNode = NewOrigin # Use the new OriginNode
@@ -176,9 +217,18 @@ while Running:
                     pass
                 else:
                     ClearTerminal()
-                    print(Fore.GREEN+Style.BRIGHT+f"Maze got generated Successfully")
-                    print(DeadCell)
+                    End_Time = int(time.time() - start_time)
+                    print(Fore.GREEN+Style.BRIGHT+f"---> Maze got generated Successfully !!",end="")
                     Algorithm_status = False
+                    
+                    print(Fore.BLUE+Style.BRIGHT+f"""
+{Fore.CYAN}[/] -  Origin Cell     : {Fore.MAGENTA}{OriginNode}{Fore.BLUE}
+{Fore.CYAN}[/] -  CallBack Cell   : {Fore.MAGENTA}{Origin_CallBack}{Fore.BLUE}
+{Fore.CYAN}[/] -  Taken time (s)  : {Fore.MAGENTA}{End_Time}s{Fore.BLUE} | {Fore.MAGENTA}{float(time.time() - start_time)*1000}ms {Fore.BLUE}
+{Fore.CYAN}[/] -  Detected Cells  : {Fore.MAGENTA}{len(NotValid)}{Fore.BLUE}
+    
+                          """)
+                    pass
                     
                     
                     
@@ -222,7 +272,7 @@ while Running:
             # print(f"[{tuple(cordinates)}], In NotValid {tuple(cordinates) in NotValid}  - In DeadList {tuple(cordinates) in DeadCell}   | Lists")
             return False
 
-        if tuple(cordinates) in DeadCell: # Dead Cell
+        if tuple(cordinates) in DeadCells: # Dead Cell
             print(f" ---- >Dead Cell {cordinates}")
             if Show_Details:
                 Pos_x, Pos_y = cordinates[0], cordinates[1]
@@ -303,6 +353,8 @@ while Running:
     pygame.display.update()
     clock.tick(60)
     pass
+
+
 
 
 
