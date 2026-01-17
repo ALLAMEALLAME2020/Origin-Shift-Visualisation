@@ -10,7 +10,7 @@ pygame.init() # Initialisation (Get ready for work hehe)
 
 # Varibles
 screen_x, screen_y = 600, 600
-celle_size = 40
+celle_size = 60
 screen = pygame.display.set_mode((screen_x, screen_y))
 pygame.display.set_caption("Origin Shift Visualisation")
 clock = pygame.time.Clock()
@@ -22,12 +22,13 @@ colors_root = {
     "Origin-node": (24, 174, 19, 0.8)
 }
 
-OriginNode = (0,0)
+OriginNode = (9,5)
 Origin_CallBack = (0, 0)
 NotValid = set(OriginNode)
 DeadCell = set()
 stack_history = []
 Algorithm_status = False
+Show_Details = True
 
 # Build the Map function
 def ClearMap():
@@ -56,7 +57,9 @@ while Running:
             if event.key == pygame.K_q: # Closing window Event Using (Q Button)
                 Running = False
                 
-            if event.key == pygame.K_m: # Saving the map cells in file to use lmra jaya
+                
+            # Saving the map cells in file to use lmra jaya      (M)  : Keyboard
+            if event.key == pygame.K_m:
                 try:
                     with open('PathData.txt','w') as file: # Write data on the file (Anl9ah fsame path kola mra hehe)
                         file.write(str(NotValid))
@@ -64,9 +67,10 @@ while Running:
                     pass
                 except Exception as e: # Detect Errors
                     print(Fore.RED+Style.BRIGHT+f"Error Detected  : {e}")
-                    
-                    
-            if event.key == pygame.K_c: # Clear the MAP (msa7 msa7)
+                
+                
+            # Clearing the Board (Map).   (C)  : Keyboard     
+            if event.key == pygame.K_c: 
                 print(Fore.GREEN+Style.BRIGHT+f"Map hase been cleard !!")
                 OriginNode = (0,0)
                 Origin_CallBack = (0, 0)
@@ -79,10 +83,18 @@ while Running:
                 print(DeadCell)
                 
             
+            # Start and stop using the Same button   (S)  : Keyboard
             if event.key == pygame.K_s:
-                ClearTerminal()
-                print(Fore.GREEN+Style.BRIGHT+f"[START]  : Algorithm Going to start RN.")
-                Algorithm_status = True
+                if Algorithm_status:
+                    Algorithm_status = False
+                    ClearTerminal()
+                    print(Fore.YELLOW+Style.BRIGHT+f"[START]  : Algorithm get stopped For a bit")
+                elif not Algorithm_status:
+                    Algorithm_status = True
+                    ClearTerminal()
+                    print(Fore.GREEN+Style.BRIGHT+f"[START]  : Algorithm Going to start RN.")
+                
+                
 
             if event.key == pygame.K_o:
                 ClearTerminal()
@@ -121,7 +133,6 @@ while Running:
         global NotValid
         
         cell_x, cell_y = OriginNode[0], OriginNode[1]
-        pygame.draw.circle(screen, colors_root["Origin-node"], ((OriginNode[0] * celle_size) + celle_size / 2 , (OriginNode[1] * celle_size) + celle_size / 2), 2)
         
         neighbors = [ # Searching for authers dotes bach ytconectaw wkda rak fahm
                 [cell_x - 1, cell_y], # Left
@@ -141,6 +152,8 @@ while Running:
     
     
         for Neighber in neighbors:
+            if tuple(Neighber) in NotValid:
+                pass
             status = Filtring_Function(Neighber)
             # print(status)
             if not status:
@@ -149,11 +162,10 @@ while Running:
             if status:
                 Valid_choices.append(Neighber)
 
-
+        print(Valid_choices)
         try:
             if not Valid_choices: # If the cell have no Neighbors (mskiins hahaha)
-                DeadCell.add(tuple(OriginNode))
-                
+
                 if stack_history:
                     NewOrigin = stack_history.pop() # Get the new OriginNode from the History
                     OriginNode = NewOrigin # Use the new OriginNode
@@ -165,6 +177,7 @@ while Running:
                 else:
                     ClearTerminal()
                     print(Fore.GREEN+Style.BRIGHT+f"Maze got generated Successfully")
+                    print(DeadCell)
                     Algorithm_status = False
                     
                     
@@ -210,11 +223,11 @@ while Running:
             return False
 
         if tuple(cordinates) in DeadCell: # Dead Cell
-            # Pos_x, Pos_y = cordinates[0], cordinates[1]
-            # print(Fore.RED+Style.BRIGHT+f"Dead Cell Detected HERE ....")
-            # pygame.draw.circle(screen, "RED", ((Pos_x * celle_size) + celle_size//2, (Pos_y * celle_size) + celle_size//2), 15)
-            # print(f"[{tuple(cordinates)}], In NotValid {tuple(cordinates) in NotValid}  - In DeadList {tuple(cordinates) in DeadCell}   | Lists")
-            return False
+            print(f" ---- >Dead Cell {cordinates}")
+            if Show_Details:
+                Pos_x, Pos_y = cordinates[0], cordinates[1]
+                pygame.draw.circle(screen, "RED", ((Pos_x * celle_size) + celle_size//2, (Pos_y * celle_size) + celle_size//2), 15)            
+                return False
 
 
         if cordinates == OriginNode or cordinates == Origin_CallBack: # The Same cell
@@ -269,17 +282,24 @@ while Running:
     
     
     
-        # Change Old origin color
-        pygame.draw.circle(screen, colors_root["walls-color"], ((Origin_CallBack[0] * celle_size) + celle_size / 2, (Origin_CallBack[1] * celle_size) + celle_size / 2), 2)
-        
-        # Draw New Origin Node
-        pygame.draw.circle(screen, colors_root["Origin-node"], ((Pos_x * celle_size) + celle_size / 2, (Pos_y * celle_size) + celle_size / 2), 2)
+        # Show The Details Lines And Dead Cells Styles
     
-        # Connect them by a line ( Rawabit 2ossariya rak fahm 3liya hhhhhh. ana 7amd 3arf 3arf)
-        pygame.draw.line(screen, "BLUE",
-                         ((OriginNode[0] * celle_size) + celle_size/2, (OriginNode[1] * celle_size) + celle_size/2), # First Point Pos (Line start)
-                         ((Origin_CallBack[0] * celle_size) + celle_size/2, (Origin_CallBack[1] * celle_size) + celle_size/2)  # Second Point Pos (Line End)
-                         )
+        if Show_Details: 
+            
+            # Show The Origin Cell
+            pygame.draw.circle(screen, colors_root["Origin-node"], ((OriginNode[0] * celle_size) + celle_size / 2 , (OriginNode[1] * celle_size) + celle_size / 2), 2)
+            
+            # Change Old origin color
+            pygame.draw.circle(screen, colors_root["walls-color"], ((Origin_CallBack[0] * celle_size) + celle_size / 2, (Origin_CallBack[1] * celle_size) + celle_size / 2), 2)
+            
+            # Draw New Origin Node
+            pygame.draw.circle(screen, colors_root["Origin-node"], ((Pos_x * celle_size) + celle_size / 2, (Pos_y * celle_size) + celle_size / 2), 2)
+        
+            # Connect them by a line ( Rawabit 2ossariya rak fahm 3liya hhhhhh. ana 7amd 3arf 3arf)
+            pygame.draw.line(screen, "BLUE",
+                            ((OriginNode[0] * celle_size) + celle_size/2, (OriginNode[1] * celle_size) + celle_size/2), # First Point Pos (Line start)
+                            ((Origin_CallBack[0] * celle_size) + celle_size/2, (Origin_CallBack[1] * celle_size) + celle_size/2)  # Second Point Pos (Line End)
+                            )
     pygame.display.update()
     clock.tick(60)
     pass
