@@ -143,7 +143,7 @@ while Running:
                 
                 
 
-            if event.key == pygame.K_z:
+            if event.key == pygame.K_z: # Show and disable the generating details
                 if not Show_Details:
                     Show_Details = True
                 else:
