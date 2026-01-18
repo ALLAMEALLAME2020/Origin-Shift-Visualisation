@@ -11,7 +11,7 @@ pygame.init() # Initialisation (Get ready for work hehe)
 # Varibles
 Running = True
 screen_x, screen_y = 600, 600
-celle_size = 10
+celle_size = 40
 screen = pygame.display.set_mode((screen_x, screen_y))
 pygame.display.set_caption("Origin Shift Visualisation")
 clock = pygame.time.Clock()
@@ -53,28 +53,31 @@ def ClearTerminal():
 # Welcoming Message
 def Welcoming():
     ClearTerminal() # clear the terminal
-    print(Fore.BLUE+Style.BRIGHT+f"""
-Hey Ther. I am {Fore.MAGENTA}t0m.dev{Fore.BLUE} or {Fore.MAGENTA}TOM{Fore.BLUE}, happy to see you using my project Agin.
-          
-{Fore.CYAN}[/] Description  :
-- {Fore.GREEN} The idea is simple. i used Origin-Shift Algorithme to make a visualisation of Maze Generating.{Fore.BLUE}
-          
-{Fore.CYAN}[/] Note  :
-- {Fore.MAGENTA}[Z] {Fore.BLUE} To Show The details of maze generating press {Fore.MAGENTA}[ Z ]{Fore.BLUE} Before you starting the Algorithm.
-- {Fore.MAGENTA}[S] {Fore.BLUE} To Start The algorithme press {Fore.MAGENTA}[S]{Fore.BLUE}. Also use the same key in your keyboard to pause it.
-- {Fore.MAGENTA}[M] {Fore.BLUE} To Save The used path in text file inside the same direction use {Fore.MAGENTA}[M]{Fore.BLUE}. (Use it after the maze get finished)
-- {Fore.MAGENTA}[O] {Fore.BLUE} Finally To Quit the Visualisation press {Fore.MAGENTA}[Q]{Fore.BLUE}.
-          
-          
-{Fore.CYAN}[/] Also  :
-- {Fore.BLUE} The Default Settings are  :
-    {Fore.GREEN}-> Show-Details  : {Fore.RED+str(Show_Details)}
-    {Fore.GREEN}-> Cell-Size  : {Fore.RED+str(celle_size)}px
-    {Fore.GREEN}-> Screen-Size  : [{Fore.RED+str(screen_x)}px | {str(screen_y)}px{Fore.GREEN}]
-    
-    
-{Fore.CYAN}[<3] From < t0m.dev > | < TOM >
-          """)
+    print(
+    Fore.BLUE + Style.BRIGHT +
+    "\n" + "═" * 70 + "\n"
+    f"{Fore.CYAN} Hey there! I am {Fore.MAGENTA}t0m.dev{Fore.CYAN} a.k.a {Fore.MAGENTA}TOM\n"
+    f"{Fore.CYAN} Welcome, and thanks for using my project again.\n\n"
+
+    f"{Fore.CYAN}[ DESCRIPTION ]\n"
+    f"{Fore.GREEN} • Simple idea: using the Origin-Shift Algorithm\n"
+    f"{Fore.GREEN}   to visualize maze generation in real time.\n\n"
+
+    f"{Fore.CYAN}[ CONTROLS ]\n"
+    f"{Fore.MAGENTA} [Z]{Fore.WHITE}  Show generation details (press before start)\n"
+    f"{Fore.MAGENTA} [S]{Fore.WHITE}  Start / Pause the algorithm\n"
+    f"{Fore.MAGENTA} [M]{Fore.WHITE}  Save the used path to a text file (after finish)\n"
+    f"{Fore.MAGENTA} [Q]{Fore.WHITE}  Quit the visualization\n\n"
+
+    f"{Fore.CYAN}[ DEFAULT SETTINGS ]\n"
+    f"{Fore.GREEN} • Show Details : {Fore.RED}{Show_Details}\n"
+    f"{Fore.GREEN} • Cell Size    : {Fore.RED}{celle_size}px\n"
+    f"{Fore.GREEN} • Screen Size  : {Fore.RED}{screen_x}px x {screen_y}px\n\n"
+
+    f"{Fore.CYAN} Made with passion by < {Fore.MAGENTA}t0m.dev / TOM{Fore.CYAN} >\n"
+    + "═" * 70
+)
+
     
     time.sleep(2)
     pass
@@ -105,16 +108,19 @@ while Running:
                 
             # Clearing the Board (Map).   (C)  : Keyboard     
             if event.key == pygame.K_c: 
+                ClearTerminal()
+                ClearMap()
                 print(Fore.GREEN+Style.BRIGHT+f"Map hase been cleard !!")
+                
+                # Restarting all varibles
                 OriginNode = (0,0)
                 Origin_CallBack = (0, 0)
                 stack_history = []
-                NotValid = set() # Clear the list of NotValid
+                NotValid = set()
                 DeadCells = set()
-                
+                start_time = 0
                 Algorithm_status = False
-                ClearMap()
-                print(DeadCells)
+                
                 
             
             # Start and stop using the Same button   (S)  : Keyboard
@@ -155,7 +161,7 @@ while Running:
                 blockPos_X = int(mouse_pose[0] / celle_size) # X cell Cordinates
                 blockPos_Y = int(mouse_pose[1] / celle_size) # Y cell Cordinates
                 
-                print(Fore.BLUE+Style.BRIGHT+f"Left Mouse got pressed --> [ X: {Fore.GREEN+str(blockPos_X)+Fore.BLUE}, Y: {Fore.GREEN+str(blockPos_Y)+Fore.BLUE} ]")
+                # print(Fore.BLUE+Style.BRIGHT+f"Left Mouse got pressed --> [ X: {Fore.GREEN+str(blockPos_X)+Fore.BLUE}, Y: {Fore.GREEN+str(blockPos_Y)+Fore.BLUE} ]")
             elif mouse[2]:
                 blockPos_X = int(mouse_pose[0] / celle_size) # X cell Cordinates
                 blockPos_Y = int(mouse_pose[1] / celle_size) # Y cell Cordinates
@@ -218,16 +224,19 @@ while Running:
                 else:
                     ClearTerminal()
                     End_Time = int(time.time() - start_time)
-                    print(Fore.GREEN+Style.BRIGHT+f"---> Maze got generated Successfully !!",end="")
+                    print(Fore.GREEN+Style.BRIGHT+f"---> Maze got generated Successfully !!")
                     Algorithm_status = False
                     
-                    print(Fore.BLUE+Style.BRIGHT+f"""
-{Fore.CYAN}[/] -  Origin Cell     : {Fore.MAGENTA}{OriginNode}{Fore.BLUE}
-{Fore.CYAN}[/] -  CallBack Cell   : {Fore.MAGENTA}{Origin_CallBack}{Fore.BLUE}
-{Fore.CYAN}[/] -  Taken time (s)  : {Fore.MAGENTA}{End_Time}s{Fore.BLUE} | {Fore.MAGENTA}{float(time.time() - start_time)*1000}ms {Fore.BLUE}
-{Fore.CYAN}[/] -  Detected Cells  : {Fore.MAGENTA}{len(NotValid)}{Fore.BLUE}
-    
-                          """)
+                    print(
+    Fore.BLUE + Style.BRIGHT +
+    "─" * 55 + "\n"
+    f"{Fore.CYAN}[*] ORIGIN CELL      {Fore.WHITE}: {Fore.MAGENTA}{OriginNode}\n"
+    f"{Fore.CYAN}[*] CALLBACK CELL    {Fore.WHITE}: {Fore.MAGENTA}{Origin_CallBack}\n"
+    f"{Fore.CYAN}[*] TIME ELAPSED     {Fore.WHITE}: {Fore.MAGENTA}{End_Time}s "
+    f"{Fore.WHITE}({float(time.time() - start_time)*1000:.2f} ms)\n"
+    f"{Fore.CYAN}[*] DETECTED CELLS   {Fore.WHITE}: {Fore.MAGENTA}{len(NotValid)}\n"
+    + "─" * 55
+)
                     pass
                     
                     
@@ -353,8 +362,3 @@ while Running:
     pygame.display.update()
     clock.tick(60)
     pass
-
-
-
-
-
