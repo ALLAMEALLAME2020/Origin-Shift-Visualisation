@@ -11,7 +11,7 @@ pygame.init() # Initialisation (Get ready for work hehe)
 # Varibles
 Running = True
 screen_x, screen_y = 600, 600
-celle_size = 40
+celle_size = 8 #   <<---------------------------------------------
 screen = pygame.display.set_mode((screen_x, screen_y))
 pygame.display.set_caption("Origin Shift Visualisation")
 clock = pygame.time.Clock()
@@ -31,7 +31,7 @@ Algorithm_status = False
 Show_Details = False
 
 start_time = 0
-
+Backing_track = False
 # Build the Map function
 def ClearMap():
     screen.fill((colors_root["background-color"])) # Background color
@@ -79,7 +79,6 @@ def Welcoming():
 )
 
     
-    time.sleep(2)
     pass
 
    
@@ -99,7 +98,7 @@ while Running:
             if event.key == pygame.K_m:
                 try:
                     with open('PathData.txt','w') as file: # Write data on the file (Anl9ah fsame path kola mra hehe)
-                        file.write(str(NotValid))
+                        file.write(str(list(NotValid)))
                         print(Fore.GREEN+Style.BRIGHT+f"Map got saved in the file Succsusfully")
                     pass
                 except Exception as e: # Detect Errors
@@ -129,7 +128,7 @@ while Running:
                     Algorithm_status = False
                     start_time = time.time() - start_time
                     ClearTerminal()
-                    print(Fore.YELLOW+Style.BRIGHT+f"[START]  : Algorithm get stopped For a bit")
+                    print(Fore.YELLOW+Style.BRIGHT+f"[START]  : Algorithm get stopped For a bit. Current time is  : [ {int(start_time)}s ]")
                 elif not Algorithm_status:
                     Algorithm_status = True
                     ClearTerminal()
@@ -170,7 +169,7 @@ while Running:
     
     
     
-    if Algorithm_status:
+    if Algorithm_status:                
         StartAlgorithm()
     
     
@@ -179,6 +178,7 @@ while Running:
         global OriginNode
         global Algorithm_status
         global NotValid
+        global Backing_track
         
         cell_x, cell_y = OriginNode[0], OriginNode[1]
         
@@ -201,8 +201,6 @@ while Running:
         
 
         for Neighber in neighbors:
-            if tuple(Neighber) in NotValid:
-                pass
             status = Filtring_Function(Neighber)
             # print(status)
             if not status:
@@ -210,15 +208,22 @@ while Running:
             if status:
                 Valid_choices.append(Neighber)
 
-
         try:
             if not Valid_choices: # If the cell have no Neighbors (mskiins hahaha)
+                
                 if stack_history:
                     NewOrigin = stack_history.pop() # Get the new OriginNode from the History
                     OriginNode = NewOrigin # Use the new OriginNode
                     Origin_CallBack = stack_history[-1] # Use the New Call Back node
                     
-                    NotValid.add(tuple(OriginNode))
+                    
+                    # Show The Dead Cells when show details is active
+                    if not Backing_track and Show_Details == True:
+                        pygame.draw.circle(screen, "RED", ((OriginNode[0] * celle_size) + celle_size // 2, (OriginNode[1] * celle_size) + celle_size // 2), 4)
+                    if not Backing_track: # Add the node to DeadCell list
+                        DeadCells.add(tuple(OriginNode))
+                    Backing_track = True
+                    # NotValid.add(tuple(OriginNode))
                     DrawingFunc(OriginNode[0], OriginNode[1])
                     pass
                 else:
@@ -235,6 +240,8 @@ while Running:
     f"{Fore.CYAN}[*] TIME ELAPSED     {Fore.WHITE}: {Fore.MAGENTA}{End_Time}s "
     f"{Fore.WHITE}({float(time.time() - start_time)*1000:.2f} ms)\n"
     f"{Fore.CYAN}[*] DETECTED CELLS   {Fore.WHITE}: {Fore.MAGENTA}{len(NotValid)}\n"
+    f"{Fore.CYAN}[*] DEAD CELLS       {Fore.WHITE}: {Fore.MAGENTA}{len(DeadCells)}\n"
+    f"{Fore.CYAN}[*] TOTAL CELLS      {Fore.WHITE}: {Fore.MAGENTA}{len(NotValid)+len(DeadCells)}\n"
     + "─" * 55
 )
                     pass
@@ -245,14 +252,18 @@ while Running:
                     
                     
             if Valid_choices:
+                Backing_track = False
                 stack_history.append(tuple(OriginNode)) # Get The OLD Origin
                 RandomChoice = random.choice(Valid_choices)
+                
                 Origin_CallBack = OriginNode
-                OriginNode = RandomChoice
+                OriginNode = RandomChoice # Use The new Origin
+
                 
                 NotValid.add(tuple(RandomChoice))
-                stack_history.append(RandomChoice) # Get The new Origin
+                stack_history.append(RandomChoice)
                 DrawingFunc(OriginNode[0], OriginNode[1])
+
                 
             
         except Exception as error:
@@ -289,14 +300,11 @@ while Running:
                 return False
 
 
-        if cordinates == OriginNode or cordinates == Origin_CallBack: # The Same cell
-            return False
+        # if cordinates == OriginNode or cordinates == Origin_CallBack: # The Same cell
+        #     return False
         return True
 
 
-    
-    
-    
     
     def DrawingFunc(Pos_x, Pos_y): # Drawing funciton.
         # print(Pos_x, Pos_y)
@@ -342,7 +350,7 @@ while Running:
     
     
         # Show The Details Lines And Dead Cells Styles
-    
+
         if Show_Details: 
             
             # Show The Origin Cell
