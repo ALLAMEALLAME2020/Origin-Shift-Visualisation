@@ -11,7 +11,7 @@ pygame.init() # Initialisation (Get ready for work hehe)
 # Varibles
 Running = True
 screen_x, screen_y = 600, 600
-celle_size = 8 #   <<---------------------------------------------
+celle_size = 40 #   <<---------------------------------------------
 screen = pygame.display.set_mode((screen_x, screen_y))
 pygame.display.set_caption("Origin Shift Visualisation")
 clock = pygame.time.Clock()
